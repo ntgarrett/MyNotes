@@ -7,32 +7,36 @@ import {
   Text,
   View,
   Pressable,
-  Modal
+  Modal,
+  useColorScheme
 } from 'react-native';
 import { useSelector } from 'react-redux';
 
 import NoteForm from './NoteForm';
 import Card from './Card';
+import { darkTheme, lightTheme } from './theme';
 
 const Main = () => {
   const [noteModalVisible, setNoteModalVisible] = useState(false);
   var notes = useSelector((state) => state.notes);
 
+  const theme = useColorScheme();
+
   const AddIcon = () => {
     return (
       <View style={styles.addbutton}>
-        <Icon name='add-outline' size={35} />
+        <Icon name='add-outline' size={35} color={theme === 'dark' ? darkTheme.text : lightTheme.text} />
       </View>
     );
   };
 
   return (
     <SafeAreaView style={styles.root}> 
-      <View style={styles.header}>
+      <View style={[styles.header, theme === 'dark' ? styles.darkheader : styles.lightheader]}>
         <View style={{ opacity: 0 }}>
           <AddIcon />
         </View>
-        <Text style={styles.headertext}>Notes</Text>
+        <Text style={[styles.headertext, theme === 'dark' ? styles.titledark : styles.titlelight]}>Notes</Text>
         <Pressable 
           style={{ marginLeft: 'auto' }}
           onPress={() => {
@@ -42,7 +46,7 @@ const Main = () => {
           <AddIcon />
         </Pressable>
       </View>
-      <View style={styles.body}>
+      <View style={[styles.body, theme === 'dark' ? styles.darkbody : styles.lightbody]}>
         <ScrollView>
           { notes.map((note) => {
             return (
@@ -78,6 +82,7 @@ const styles = StyleSheet.create({
   header: {
     flex: 1,
     backgroundColor: 'white',
+    borderWidth: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -97,6 +102,24 @@ const styles = StyleSheet.create({
   },
   body: {
     flex: 14,
+  },
+  darkbody: {
+    backgroundColor: darkTheme.background,
+  },
+  lightbody: {
+    backgroundColor: lightTheme.background,
+  },
+  darkheader: {
+    backgroundColor: darkTheme.foreground,
+  },
+  lightheader: {
+    backgroundColor: lightTheme.foreground,
+  },
+  titledark: {
+    color: darkTheme.text,
+  },
+  titlelight: {
+    color: lightTheme.text,
   },
 });
 

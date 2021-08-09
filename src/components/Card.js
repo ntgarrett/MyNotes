@@ -5,16 +5,19 @@ import {
   Text,
   Pressable,
   Modal,
-  Alert
+  Alert,
+  useColorScheme
 } from 'react-native';
 import { useDispatch } from 'react-redux';
 
 import { deleteNote } from '../state/actions';
 import NoteForm from './NoteForm';
+import { darkTheme, lightTheme } from './theme';
 
 const Card = (props) => {
   const { id, title, content } = props;
   const [noteModalVisible, setNoteModalVisible] = useState(false);
+  const theme = useColorScheme();
 
   const dispatch = useDispatch();
 
@@ -42,10 +45,10 @@ const Card = (props) => {
           setNoteModalVisible(!noteModalVisible);
         }}
         onLongPress={showAlert}
-        delayLongPress={1}
+        delayLongPress={250}
       >
-        <View style={styles.card}>
-          <Text style={styles.title}>
+        <View style={[styles.card, theme === 'dark' ? styles.darkcard : styles.lightcard]}>
+          <Text style={[styles.title, theme === 'dark' ? styles.textdark : styles.textlight ]}>
             {title}
           </Text>
         </View>
@@ -77,14 +80,24 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: 5,
     borderWidth: 1,
-    backgroundColor: 'white',
     flexDirection: 'row',
   },
   title: {
-    color: 'black',
     fontSize: 19,
-    padding: 15,
+    padding: 13,
   },
+  textdark: {
+    color: darkTheme.text,
+  },
+  textlight: {
+    color: lightTheme.text,
+  },
+  darkcard: {
+    backgroundColor: darkTheme.foreground,
+  },
+  lightcard: {
+    backgroundColor: lightTheme.foreground,
+  },  
 });
 
 export default Card;

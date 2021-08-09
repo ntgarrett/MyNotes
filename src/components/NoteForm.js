@@ -6,11 +6,13 @@ import {
   Text,
   View,
   TextInput,
-  Pressable
+  Pressable,
+  useColorScheme
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { addNote, updateNote } from '../state/actions';
+import { darkTheme, lightTheme } from './theme';
 
 const NoteForm = (props) => {
   const { isEditing, id, noteTitle, noteContent, setNoteModalVisible } = props;
@@ -18,22 +20,24 @@ const NoteForm = (props) => {
   const [title, setTitle] = useState(noteTitle || '');
   const [content, setContent] = useState(noteContent || '');
 
+  const theme = useColorScheme();
+
   const dispatch = useDispatch();
   var notes = useSelector((state) => state.notes);
 
   const EditIcon = () => {
     return (
-      <Icon name='create-outline' size={35} color='black' />
+      <Icon name='create-outline' size={35} color={theme === 'dark' ? darkTheme.text : lightTheme.text} />
     );
   };
 
   return (
-    <SafeAreaView style={styles.root}>
-      <View style={styles.top}>
+    <SafeAreaView style={[styles.root, theme === 'dark' ? styles.darkbackground : styles.lightbackground]}>
+      <View style={styles.heading}>
         <TextInput
-          style={styles.title}
+          style={[styles.title, theme === 'dark' ? styles.darkinput : styles.lightinput]}
           placeholder='Title'
-          placeholderTextColor='black'
+          placeholderTextColor={theme === 'dark' ? darkTheme.text : lightTheme.text}
           value={title}
           onChangeText={setTitle}
           maxLength={50}
@@ -70,12 +74,12 @@ const NoteForm = (props) => {
             }
           }}
         >
-          {editMode ? <Text style={styles.buttontext}>Save</Text> : <EditIcon />}
+          {editMode ? <Text style={[styles.buttontext, theme === 'dark' ? styles.darktext : styles.lighttext]}>Save</Text> : <EditIcon />}
         </Pressable>
       </View>
       <View style={styles.body}>
         <TextInput
-          style={styles.content}
+          style={[styles.content, theme === 'dark' ? styles.darkinput : styles.lightinput]}
           value={content}
           multiline={true}
           onChangeText={setContent}
@@ -92,7 +96,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 10,
   },
-  top: {
+  heading: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
@@ -103,11 +107,8 @@ const styles = StyleSheet.create({
     fontSize: 18,
     borderWidth: 1,
     padding: 10,
-    backgroundColor: 'white',
-    color: 'black',
   },
   buttontext: {
-    color: 'black',
     fontSize: 20,
   },
   body: {
@@ -118,8 +119,27 @@ const styles = StyleSheet.create({
     padding: 10,
     fontSize: 16,
     height: '95%',
-    color: 'black',
     textAlignVertical: 'top',
+  },
+  darkbackground: {
+    backgroundColor: darkTheme.background,
+  },
+  lightbackground: {
+    backgroundColor: lightTheme.background,
+  },
+  darktext: {
+    color: darkTheme.text,
+  },
+  lighttext: {
+    color: lightTheme.text,
+  },
+  darkinput: {
+    backgroundColor: darkTheme.foreground,
+    color: darkTheme.text,
+  },
+  lightinput: {
+    backgroundColor: lightTheme.foreground,
+    color: lightTheme.text,
   },
 });
 
