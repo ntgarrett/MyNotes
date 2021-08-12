@@ -19,12 +19,13 @@ function rootReducer(state = initial_state, action) {
       };
     case DELETE_NOTE:
       return {
-        notes: state.notes.filter((note, index) => index !== action.id)
+        notes: state.notes.filter((note) => note.id !== action.id)
       };
     case UPDATE_NOTE: {
+      const index = state.notes.findIndex(note => note.id == action.id);
       const updatedNotes = [...state.notes];
-      updatedNotes[action.id].title = action.title;
-      updatedNotes[action.id].content = action.content;
+      updatedNotes[index].title = action.title;
+      updatedNotes[index].content = action.content;
       return {
         ...state,
         notes: updatedNotes,
