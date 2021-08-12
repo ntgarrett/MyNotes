@@ -29,7 +29,7 @@ const NoteForm = (props) => {
   var notes = useSelector((state) => state.notes);
 
   function handleAlerts() {
-    if (isEditing && isNewNote && (title.length > 0 || content.length > 0)) {
+    if (editMode && isNewNote && (title.length > 0 || content.length > 0)) {
       Alert.alert(
         'Discard this note?',
         '',
@@ -74,7 +74,7 @@ const NoteForm = (props) => {
 
   const BackButton = () => {
     return (
-      <View style={styles.backButton}>
+      <View style={styles.button}>
         <Pressable
           onPress={handleAlerts}
         >
@@ -108,11 +108,11 @@ const NoteForm = (props) => {
         </View>
         <View style={styles.rightLeftContainer}>
           <Pressable
-            style={styles.backButton}
+            style={styles.button}
             onPress={() => {
               if (editMode) {
                 // if note exists, then update
-                if (notes.findIndex(note => note.id === id) !== -1) {
+                if (notes.find(note => note.id === id) !== undefined) {
                   if (title.length === 0) {
                     dispatch(updateNote(id, 'Untitled', content));
                   } else {
@@ -122,8 +122,10 @@ const NoteForm = (props) => {
                   // add new note
                   if (title.length === 0) {
                     dispatch(addNote(id, 'Untitled', content));
+                    setNoteModalVisible(false);
                   } else {
                     dispatch(addNote(id, title, content));
+                    setNoteModalVisible(false);
                   }
                 }
                 setEditMode(!editMode);
@@ -195,7 +197,7 @@ const styles = StyleSheet.create({
     height: '95%',
     textAlignVertical: 'top',
   },
-  backButton: {
+  button: {
     marginLeft: 5,
     marginRight: 5,
     alignSelf: 'center',
