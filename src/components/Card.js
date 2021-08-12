@@ -22,21 +22,21 @@ const Card = (props) => {
   const dispatch = useDispatch();
 
   const showAlert = () => 
-  Alert.alert(
-    'Delete this note?', 
-    '',
-  [
-    {
-      text: 'OK',
-      onPress: () => dispatch(deleteNote(id))
-    },
-    {
-      text: 'Cancel',
-      onPress: () => { console.log('Cancelled')},
-    },
-  ],
-  { cancelable: true, }
-);
+    Alert.alert(
+      'Delete this note?', 
+      '',
+    [
+      {
+        text: 'OK',
+        onPress: () => dispatch(deleteNote(id))
+      },
+      {
+        text: 'Cancel',
+        onPress: () => { console.log('Cancelled')},
+      },
+    ],
+    { cancelable: true, }
+  );
 
   return (
     <View style={styles.root}>
@@ -48,7 +48,7 @@ const Card = (props) => {
         delayLongPress={250}
       >
         <View style={[styles.card, theme === 'dark' ? styles.darkcard : styles.lightcard]}>
-          <Text style={[styles.title, theme === 'dark' ? styles.textdark : styles.textlight ]}>
+          <Text numberOfLines={1} style={[styles.title, theme === 'dark' ? styles.textdark : styles.textlight ]}>
             {title}
           </Text>
         </View>
@@ -64,6 +64,7 @@ const Card = (props) => {
           id={id} 
           noteTitle={title}
           noteContent={content}
+          isNewNote={false}
           setNoteModalVisible={setNoteModalVisible} 
         />
       </Modal>
