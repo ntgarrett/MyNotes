@@ -7,23 +7,64 @@ import {
   View,
   TextInput,
   Pressable,
-  useColorScheme
+  useColorScheme,
+  Alert
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { addNote, updateNote } from '../state/actions';
+import { useOrientation } from './Orientation';
 import { darkTheme, lightTheme } from './theme';
 
 const NoteForm = (props) => {
-  const { isEditing, id, noteTitle, noteContent, setNoteModalVisible } = props;
+  const { isEditing, id, noteTitle, noteContent, isNewNote, setNoteModalVisible } = props;
   const [editMode, setEditMode] = useState(isEditing);
   const [title, setTitle] = useState(noteTitle || '');
   const [content, setContent] = useState(noteContent || '');
 
+  const orientation = useOrientation();
   const theme = useColorScheme();
 
   const dispatch = useDispatch();
   var notes = useSelector((state) => state.notes);
+
+  function handleAlerts() {
+    if (isEditing && isNewNote && (title.length > 0 || content.length > 0)) {
+      Alert.alert(
+        'Discard this note?',
+        '',
+        [
+          {
+            text: 'OK',
+            onPress: () => setNoteModalVisible(false)
+          },
+          {
+            text: 'Cancel',
+            onPress: () => {}
+          }
+        ], { cancelable: true }
+      );
+    } else if (!isNewNote && (title !== noteTitle || content !== noteContent)) {
+      // Presses back on an edited existing note
+      Alert.alert(
+        'Discard changes?',
+        '',
+        [
+          {
+            text: 'OK',
+            onPress: () => setNoteModalVisible(false)
+          },
+          {
+            text: 'Cancel',
+            onPress: () => {}
+          }
+        ], { cancelable: true }
+      );
+    } else {
+      // Presses back without changes
+      setNoteModalVisible(false);
+    } 
+  };
 
   const EditIcon = () => {
     return (
@@ -31,55 +72,74 @@ const NoteForm = (props) => {
     );
   };
 
-  return (
-    <SafeAreaView style={[styles.root, theme === 'dark' ? styles.darkbackground : styles.lightbackground]}>
-      <View style={styles.heading}>
-        <TextInput
-          style={[styles.title, theme === 'dark' ? styles.darkinput : styles.lightinput]}
-          placeholder='Title'
-          placeholderTextColor={theme === 'dark' ? darkTheme.text : lightTheme.text}
-          value={title}
-          onChangeText={setTitle}
-          maxLength={50}
-          editable={editMode}
-          onFocus={() => {
-            if (title === 'Untitled') {
-              setTitle('');
-            }
-          }}
-        />
-        <Pressable 
-          style={{marginLeft: 'auto', marginRight: 'auto'}}
-          onPress={() => {
-            if (editMode) {
-              // if note exists, then update
-              if (notes[id]) {
-                if (title.length === 0) {
-                  dispatch(updateNote(id, 'Untitled', content));
-                } else {
-                  dispatch(updateNote(id, title, content));
-                }
-              } else {
-                // add new note
-                if (title.length === 0) {
-                  dispatch(addNote(id, 'Untitled', content));
-                } else {
-                  dispatch(addNote(id, title, content));
-                }
-              }
-              setNoteModalVisible(false);
-            } else {
-              // enter edit mode
-              setEditMode(!editMode);
-            }
-          }}
+  const BackButton = () => {
+    return (
+      <View style={styles.backButton}>
+        <Pressable
+          onPress={handleAlerts}
         >
-          {editMode ? <Text style={[styles.buttontext, theme === 'dark' ? styles.darktext : styles.lighttext]}>Save</Text> : <EditIcon />}
+          <Icon name='arrow-back-outline' size={35} color={theme === 'dark' ? darkTheme.text : lightTheme.text} />
         </Pressable>
       </View>
-      <View style={styles.body}>
+    );
+  };
+
+  return (
+    <SafeAreaView style={[styles.root, theme === 'dark' ? styles.darkBackground : styles.lightBackground]}>
+      <View style={styles.header}>
+        <View style={styles.rightLeftContainer}>
+          <BackButton />
+        </View>
+        <View style={orientation === 'PORTRAIT' ? styles.centerContainerPortrait : styles.centerContainerLandscape}>
+          <TextInput
+            style={[styles.title, theme === 'dark' ? styles.darkInput : styles.lightInput]}
+            placeholder='Title'
+            placeholderTextColor={theme === 'dark' ? darkTheme.text : lightTheme.text}
+            value={title}
+            onChangeText={setTitle}
+            maxLength={50}
+            editable={editMode}
+            onFocus={() => {
+              if (title === 'Untitled') {
+                setTitle('');
+              }
+            }}
+          />
+        </View>
+        <View style={styles.rightLeftContainer}>
+          <Pressable
+            style={styles.backButton}
+            onPress={() => {
+              if (editMode) {
+                // if note exists, then update
+                if (notes.findIndex(note => note.id === id) !== -1) {
+                  if (title.length === 0) {
+                    dispatch(updateNote(id, 'Untitled', content));
+                  } else {
+                    dispatch(updateNote(id, title, content));
+                  }
+                } else {
+                  // add new note
+                  if (title.length === 0) {
+                    dispatch(addNote(id, 'Untitled', content));
+                  } else {
+                    dispatch(addNote(id, title, content));
+                  }
+                }
+                setEditMode(!editMode);
+              } else {
+                // enter edit mode
+                setEditMode(!editMode);
+              }
+            }}
+          >
+            {editMode ? <Text style={[styles.buttonText, theme === 'dark' ? styles.darkText : styles.lightText]}>Save</Text> : <EditIcon />}
+          </Pressable>
+        </View>
+      </View>
+      <View style={[styles.body, orientation === 'PORTRAIT' ? styles.portraitBody : styles.landscapeBody]}>
         <TextInput
-          style={[styles.content, theme === 'dark' ? styles.darkinput : styles.lightinput]}
+          style={[styles.content, theme === 'dark' ? styles.darkInput : styles.lightInput]}
           value={content}
           multiline={true}
           onChangeText={setContent}
@@ -94,50 +154,69 @@ const NoteForm = (props) => {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    padding: 10,
   },
-  heading: {
+  header: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
   },
+  rightLeftContainer: {
+    flex: 1,
+  },
+  centerContainerPortrait: {
+    flex: 3,
+  },
+  centerContainerLandscape: {
+    flex: 6,
+  },
   title: {
-    height: 50,
-    width: '75%',
+    height: 45,
     fontSize: 18,
     borderWidth: 1,
     padding: 10,
   },
-  buttontext: {
+  buttonText: {
     fontSize: 20,
   },
   body: {
+    paddingLeft: 10,
+    paddingRight: 10,
+  },
+  portraitBody: {
     flex: 8,
+  },
+  landscapeBody: {
+    flex: 4,
   },
   content: {
     borderWidth: 1,
     padding: 10,
-    fontSize: 16,
+    fontSize: 15,
     height: '95%',
     textAlignVertical: 'top',
   },
-  darkbackground: {
+  backButton: {
+    marginLeft: 5,
+    marginRight: 5,
+    alignSelf: 'center',
+  },
+  darkBackground: {
     backgroundColor: darkTheme.background,
   },
-  lightbackground: {
+  lightBackground: {
     backgroundColor: lightTheme.background,
   },
-  darktext: {
+  darkText: {
     color: darkTheme.text,
   },
-  lighttext: {
+  lightText: {
     color: lightTheme.text,
   },
-  darkinput: {
+  darkInput: {
     backgroundColor: darkTheme.foreground,
     color: darkTheme.text,
   },
-  lightinput: {
+  lightInput: {
     backgroundColor: lightTheme.foreground,
     color: lightTheme.text,
   },
