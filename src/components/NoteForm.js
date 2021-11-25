@@ -145,7 +145,7 @@ const NoteForm = (props) => {
           value={content}
           multiline={true}
           onChangeText={setContent}
-          maxLength={500}
+          maxLength={10000}
           editable={editMode}
         />
       </View>
